@@ -9,6 +9,8 @@ jobs:
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
+      - run: echo ${{ github.head_ref }}
+      - run: echo ${{ github.base_ref }}
       - name: Download
         run: curl https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/${{ github.ref }} > bcg729_${{ github.ref }}.orig.tar.gz
       - run: tar zxf bcg729_${{ github.ref }}.orig.tar.gz
