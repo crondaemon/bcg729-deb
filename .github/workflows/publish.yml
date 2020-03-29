@@ -1,6 +1,7 @@
 on:
   push:
     tags:
+      - '*'
 
 name: Upload Release Asset
 
@@ -9,27 +10,27 @@ jobs:
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ github.head_ref }}
-      - run: echo ${{ github.base_ref }}
+      - run: echo ::set-env name=VERSION::$(echo $GITHUB_REF | cut -d "/" -f 3)
+      - run: echo ${{ env.VERSION }}
       - name: Download
-        run: curl https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/${{ github.ref }} > bcg729_${{ github.ref }}.orig.tar.gz
-      - run: tar zxf bcg729_${{ github.ref }}.orig.tar.gz
+        run: curl https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/${{ env.VERSION }} > bcg729_${{ env.VERSION }}.orig.tar.gz
+      - run: tar zxf bcg729_${{ env.VERSION }}.orig.tar.gz
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           path: debian
-      - run: mv debian bcg729-${{ github.ref }}/
+      - run: mv debian bcg729-${{ env.VERSION }}/
       - run: sudo apt-get install devscripts equivs
       - run: dpkg-buildpackage -us -uc -sa
-        working-directory: bcg729-${{ github.ref }}
+        working-directory: bcg729-${{ env.VERSION }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
           draft: false
           prerelease: false
       - run: find ..
@@ -40,6 +41,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: libbcg729-0_${{ github.ref }}-0osso3+deb9_amd64.deb
-          asset_name: libbcg729-0_${{ github.ref }}-0osso3+deb9_amd64.deb
+          asset_path: libbcg729-0_${{ env.VERSION }}-0osso3+deb9_amd64.deb
+          asset_name: libbcg729-0_${{ env.VERSION }}-0osso3+deb9_amd64.deb
           asset_content_type: application/x-deb
